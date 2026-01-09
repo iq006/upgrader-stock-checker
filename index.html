@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrader.cc - Live Stock Checker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 Upgrader.cc Live Stock</h1>
+            <p class="subtitle">Real-time availability checker</p>
+        </header>
+
+        <div class="api-section">
+            <label for="apiKey">Din API Nøkkel:</label>
+            <div class="api-input-group">
+                <input type="password" id="apiKey" placeholder="Skriv inn din API nøkkel her">
+                <button onclick="saveApiKey()">Lagre</button>
+            </div>
+            <p class="api-status" id="apiStatus"></p>
+        </div>
+
+        <div class="stats-overview">
+            <div class="stat-card">
+                <h3>Total Stock</h3>
+                <p class="stat-number" id="totalStock">-</p>
+            </div>
+            <div class="stat-card">
+                <h3>Land Tilgjengelig</h3>
+                <p class="stat-number" id="countriesAvailable">-</p>
+            </div>
+            <div class="stat-card">
+                <h3>Sist Oppdatert</h3>
+                <p class="stat-number" id="lastUpdate">-</p>
+            </div>
+        </div>
+
+        <div class="stock-grid" id="stockGrid">
+            <p class="loading">Venter på API nøkkel...</p>
+        </div>
+
+        <div class="auto-refresh">
+            <label>
+                <input type="checkbox" id="autoRefresh" checked>
+                Auto-oppdater hvert 10. sekund
+            </label>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
