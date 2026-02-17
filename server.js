@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ⬇️ BYTT UT MED DIN FAKTISKE API NØKKEL FRA UPGRADER.CC
-const API_KEY = 'ak_YqaT5il5o1ktm7qrD989zZVWz7WlW1JLPPYYfpci';
+const API_KEY = 'ak_0GXgv83zGTl3BIvYdg4mvhEqCwOk05kTPWAqfCVo';
 
 app.use(cors());
 app.use(express.json());
