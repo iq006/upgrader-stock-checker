@@ -18,25 +18,26 @@ app.get('/api/stock', async (req, res) => {
   try {
     const response = await fetch('https://upgrader.cc/api/stock', {
       method: 'GET',
-      headers: {
-        'X-API-Key': API_KEY
-      }
+      headers: { 'X-API-Key': API_KEY }
     });
-    
-    if (!response.ok) {
-      throw new Error(`API returned ${response.status}`);
+
+    const text = await response.text(); // les body uansett
+    console.log('Upgrader status:', response.status);
+    console.log('Upgrader body:', text);
+
+    // send samme status + body videre (som JSON hvis mulig)
+    try {
+      const json = JSON.parse(text);
+      return res.status(response.status).json(json);
+    } catch {
+      return res.status(response.status).send(text);
     }
-    
-    const data = await response.json();
-    res.json(data);
   } catch (error) {
-    console.error('Error fetching stock:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch stock data',
-      message: error.message 
-    });
+    console.error('❌ Error fetching stock:', error);
+    res.status(500).json({ error: 'Server error', message: error.message });
   }
 });
+
 
 // Health check endpoint
 app.get('/health', (req, res) => {
