@@ -9,54 +9,74 @@ const PORT = process.env.PORT || 3000;
 // 🔑 API KEY i koden (som du ønsker)
 const API_KEY = 'ak_0GXgv83zGTl3BIvYdg4mvhEqCwOk05kTPWAqfCVo';
 
+// Upgrader base
+const UPGRADER_STOCK_URL = 'https://upgrader.cc/api/stock';
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// 📁 Server static files fra /public
+// Static site
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 🏠 Root: send index.html
+// Root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 📦 API endpoint – henter stock fra upgrader.cc
+// --- Enkel cache (5 sek) for å unngå rate limit / støy ---
+let cache = { ts: 0, status: 200, bodyText: '[]' };
+const CACHE_MS = 5000;
+
 app.get('/api/stock', async (req, res) => {
   try {
-    const response = await fetch('https://upgrader.cc/api/stock', {
+    const now = Date.now();
+    if (now - cache.ts < CACHE_MS) {
+      res.status(cache.status);
+      // prøv json først
+      try {
+        return res.json(JSON.parse(cache.bodyText));
+      } catch {
+        return res.send(cache.bodyText);
+      }
+    }
+
+    const response = await fetch(UPGRADER_STOCK_URL, {
       method: 'GET',
       headers: {
         'X-API-Key': API_KEY,
         'Accept': 'application/json',
-        // Mange APIer forventer en UA fra "ekte klient"
-        'User-Agent': 'Mozilla/5.0 (Render Node.js)',
+        'User-Agent': 'Mozilla/5.0 (Render; Node.js)'
       }
     });
 
-    const text = await response.text(); // les body uansett
+    const text = await response.text();
+
+    // Logg ekte svar fra Upgrader (supernyttig)
     console.log('Upgrader status:', response.status);
     console.log('Upgrader body:', text);
 
-    // Returner som JSON hvis mulig, ellers raw text
+    // Oppdater cache
+    cache = { ts: now, status: response.status, bodyText: text };
+
+    // Returner videre (json hvis mulig)
+    res.status(response.status);
     try {
-      const json = JSON.parse(text);
-      return res.status(response.status).json(json);
+      return res.json(JSON.parse(text));
     } catch {
-      return res.status(response.status).send(text);
+      return res.send(text);
     }
-  } catch (error) {
-    console.error('❌ Error fetching stock:', error);
-    res.status(500).json({ error: 'Server error', message: error.message });
+  } catch (err) {
+    console.error('Server error:', err);
+    return res.status(500).json({ error: 'server_error', message: err.message });
   }
 });
 
-// ❤️ Health check
+// Health
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// 🚀 Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server is running on port ${PORT}`);
   console.log(`🌐 API Key configured: ${API_KEY ? 'Yes' : 'No'}`);
